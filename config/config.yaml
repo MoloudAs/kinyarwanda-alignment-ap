@@ -1,0 +1,22 @@
+project_root: .
+
+inputs:
+  manual_reference_dir: data/manual_reference
+  webmaus_dir: data/webmaus
+
+outputs:
+  canonical_csv: data/derived/word_alignment_evaluation.csv
+  tables_dir: results/tables
+  figures_dir: results/figures
+
+expected:
+  evaluation_files: 16
+  manual_words: 3676
+  annotators:
+    - Annotator_1
+    - Annotator_2
+    - Annotator_3
+    - Annotator_4
+
+analysis:
+  top_error_words_per_aligner: 10

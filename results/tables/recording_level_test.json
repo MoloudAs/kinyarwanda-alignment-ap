@@ -1,0 +1,10 @@
+{
+  "N_paired_recordings": 16,
+  "wilcoxon_statistic": 8.0,
+  "wilcoxon_p": 0.000762939453125,
+  "mean_WebMAUS_minus_MFA_ms": 40.9902493013259,
+  "median_WebMAUS_minus_MFA_ms": 46.77230444419459,
+  "MFA_lower_MAE_recordings": 13,
+  "WebMAUS_lower_MAE_recordings": 3,
+  "ties": 0
+}
