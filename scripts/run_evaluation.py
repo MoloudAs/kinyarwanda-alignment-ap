@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """Command-line entry point for the Kinyarwanda alignment AP project."""
 
-from __future__ import annotations
-
 import argparse
 import sys
 from pathlib import Path
@@ -13,8 +11,8 @@ SRC_DIR = PROJECT_ROOT / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from kinyarwanda_alignment.config import load_config  # noqa: E402
-from kinyarwanda_alignment.pipeline import run_pipeline  # noqa: E402
+from kinyarwanda_alignment.config import load_config
+from kinyarwanda_alignment.pipeline import run_pipeline
 
 
 def parse_args() -> argparse.Namespace:
@@ -50,7 +48,10 @@ def main() -> None:
     print(f"Canonical CSV: {result['canonical_csv']}")
     print(f"Tables: {result['tables_dir']}")
     print(f"Figures: {result['figures_dir']}")
-    print("\nInterpretation: in-domain validation of the final Storyboard-adapted MFA system.")
+    print(
+        "\nInterpretation: in-domain validation of the final "
+        "Storyboard-adapted MFA system."
+    )
     print("=" * 72)
 
 
