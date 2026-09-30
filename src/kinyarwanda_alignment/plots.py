@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-
 def save_cumulative_edge_error(
     edge_df: pd.DataFrame,
     output_path: str | Path,
@@ -86,21 +85,54 @@ def save_paired_recording_mae(
     )
 
     fig, ax = plt.subplots(
-        figsize=(7, 5)
+        figsize=(4.2, 3.6)
     )
 
+    # Connect the two values for every recording.
     for row in per_file_df.itertuples(
         index=False
     ):
+        if row.MFA_MAE_ms < row.WebMAUS_MAE_ms:
+            color = "#009E73"
+            linestyle = "-"
+        else:
+            color = "#CC79A7"
+            linestyle = "--"
+
         ax.plot(
             [0, 1],
             [
                 row.MFA_MAE_ms,
                 row.WebMAUS_MAE_ms,
             ],
-            marker="o",
-            alpha=0.7,
+            color=color,
+            linestyle=linestyle,
+            linewidth=1.2,
+            alpha=0.75,
+            zorder=1,
         )
+
+    # MFA points
+    ax.scatter(
+        np.zeros(len(per_file_df)),
+        per_file_df["MFA_MAE_ms"],
+        color="#0072B2",
+        s=28,
+        edgecolor="white",
+        linewidth=0.4,
+        zorder=3,
+    )
+
+    # WebMAUS points
+    ax.scatter(
+        np.ones(len(per_file_df)),
+        per_file_df["WebMAUS_MAE_ms"],
+        color="#E69F00",
+        s=28,
+        edgecolor="white",
+        linewidth=0.4,
+        zorder=3,
+    )
 
     ax.set_xticks(
         [0, 1],
@@ -108,14 +140,54 @@ def save_paired_recording_mae(
     )
 
     ax.set_ylabel(
-        "Mean absolute word-boundary error (ms)"
+        "Recording MAE (ms)"
     )
 
-    ax.set_title(
-        "Paired performance across recordings"
+    ax.set_ylim(bottom=0)
+
+    # Light horizontal grid
+    ax.grid(
+        axis="y",
+        linestyle=":",
+        linewidth=0.6,
+        color="0.82",
+    )
+
+    # Cleaner frame
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+    # Small legend without another import
+    ax.plot(
+        [],
+        [],
+        color="#009E73",
+        linestyle="-",
+        label="MFA lower error (13)",
+    )
+
+    ax.plot(
+        [],
+        [],
+        color="#CC79A7",
+        linestyle="--",
+        label="WebMAUS lower error (3)",
+    )
+
+    ax.legend(
+    frameon=False,
+    loc="lower center",
+    bbox_to_anchor=(0.5, 1.02),
+    fontsize=7,
+    ncol=2,
     )
 
     fig.tight_layout()
-    fig.savefig(output_path)
+
+    fig.savefig(
+        output_path,
+        bbox_inches="tight",
+        pad_inches=0.03,
+    )
 
     plt.close(fig)
