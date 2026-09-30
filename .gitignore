@@ -17,3 +17,6 @@ venv/
 
 # VS Code local settings
 .vscode/
+
+# Audio files
+*.wav
