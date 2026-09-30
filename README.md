@@ -1,29 +1,46 @@
 # A Reproducible Python Framework for Evaluating Kinyarwanda Forced Alignment
 
-This repository contains my Advanced Python project for the course **Advanced Python for NLP** at Heinrich Heine University Düsseldorf.
+This repository contains the reproducible Python implementation used for the word-level evaluation of Kinyarwanda forced alignment in the study **Developing and Validating a Kinyarwanda Forced-Alignment Resource for Phonetic Research**.
 
-The project provides a reproducible Python workflow for evaluating Kinyarwanda forced alignment. It compares word boundaries produced by the **Montreal Forced Aligner (MFA)** and **WebMAUS** against manually annotated reference boundaries.
+The analysis compares word boundaries produced by the **Montreal Forced Aligner (MFA)** and **WebMAUS** against manually annotated reference boundaries. The repository provides the code, configuration, evaluation data, tests, derived tables, and figures required to reproduce the reported evaluation.
 
-The underlying forced-alignment study is part of a larger research project. For the AP, I reorganized the evaluation workflow into a modular Python project with configuration files, reusable functions, automated checks, tests, and reproducible outputs.
+## Evaluation data
 
-## Data and evaluation
-
-The evaluation contains:
+The evaluation dataset contains:
 
 - 16 recordings
 - 3,676 manually annotated words
+- 7,352 word boundaries per automatic aligner
 - four anonymized annotators (`Annotator_1`–`Annotator_4`)
 - Manual, MFA, and WebMAUS word boundaries
 
-The manual reference TextGrids also contain the MFA word tier. WebMAUS alignments are stored in separate TextGrid files.
+The manual-reference TextGrids also contain the MFA word tier. WebMAUS alignments are stored in separate TextGrid files.
 
-Before comparing boundary times, words are matched using normalized lexical identity and sequence order. Timing information is not used for matching.
+The evaluation is **in-domain**: the 16 recordings were part of the target corpus used during MFA adaptation.
 
-For every matched word, the pipeline calculates start- and end-boundary errors relative to the manual reference. It also reports overall error summaries, tolerance measures, recording-level comparisons, and large-error examples.
+## Evaluation approach
 
-The main statistical comparison is performed at the recording level using 16 paired MFA–WebMAUS observations.
+Words are matched across the manual reference, MFA, and WebMAUS using:
 
-## Project structure
+1. normalized lexical identity, and
+2. sequence order.
+
+Boundary timing is **not** used to establish word correspondence. Timing is compared only after the lexical sequences have been matched.
+
+For every matched word, the pipeline calculates:
+
+- signed start-boundary error
+- signed end-boundary error
+- absolute start-boundary error
+- absolute end-boundary error
+- mean absolute word-boundary error
+- percentages of boundaries within 20, 50, and 100 ms
+- percentages of words with both boundaries within the same thresholds
+- recording-level mean absolute error
+
+The main inferential comparison is performed at the **recording level**, using 16 paired MFA–WebMAUS observations.
+
+## Repository structure
 
 ```text
 kinyarwanda-alignment-ap/
@@ -40,30 +57,57 @@ kinyarwanda-alignment-ap/
 │   └── run_evaluation.py
 ├── src/
 │   └── kinyarwanda_alignment/
+│       ├── config.py
+│       ├── dataset.py
+│       ├── diagnostics.py
+│       ├── file_utils.py
+│       ├── matching.py
+│       ├── metrics.py
+│       ├── pipeline.py
+│       ├── plots.py
+│       ├── statistics.py
+│       └── textgrid_io.py
 ├── tests/
 ├── README.md
 └── requirements.txt
 ```
 
-The main analysis code is stored in `src/kinyarwanda_alignment/`. The workflow can be understood as:
+### Main modules
+
+- `config.py` — loads the YAML configuration and resolves project-relative paths.
+- `file_utils.py` — handles filename metadata and conservative word normalization.
+- `textgrid_io.py` — loads TextGrid files and validates required tiers.
+- `matching.py` — matches the manual word sequence to MFA and WebMAUS by lexical identity and order.
+- `dataset.py` — builds and validates the canonical word-level evaluation DataFrame.
+- `metrics.py` — calculates boundary-error measures and tolerance summaries.
+- `statistics.py` — creates recording-level summaries and performs the paired two-sided Wilcoxon signed-rank test.
+- `diagnostics.py` — summarizes large errors and extracts the largest-error words for inspection.
+- `plots.py` — creates the evaluation figures.
+- `pipeline.py` — coordinates the complete analysis workflow.
+
+The workflow can be summarized as:
 
 ```text
-TextGrid input
+TextGrid inputs
     ↓
-word matching
+tier validation
+    ↓
+word normalization and sequence matching
     ↓
 canonical word-level dataset
     ↓
 boundary-error calculation
     ↓
-recording-level comparison
+descriptive summaries
     ↓
-diagnostics and figures
+recording-level paired comparison
+    ↓
+diagnostics, tables, and figures
 ```
 
 ## Setup
 
-The project was developed with **Python 3.11.8**.
+The analysis was developed with **Python 3.11.8**.
 
 Create and activate a virtual environment:
 
@@ -78,9 +122,9 @@ Install the required packages:
 pip install -r requirements.txt
 ```
 
-The main packages used in the analysis are pandas, NumPy, SciPy, PyYAML, TextGrid, Matplotlib, and pytest.
+The main external packages used are pandas, NumPy, SciPy, PyYAML, TextGrid, Matplotlib, and pytest.
 
-## Running the project
+## Running the analysis
 
 From the repository root, run:
 
@@ -88,61 +132,76 @@ From the repository root, run:
 python scripts/run_evaluation.py --config config/config.yaml
 ```
 
-The pipeline rebuilds the canonical evaluation dataset from the TextGrid inputs and saves the resulting tables and figures.
+The pipeline rebuilds the canonical evaluation dataset from the TextGrid inputs and writes the derived tables and figures to the configured output directories.
 
-To run the tests:
+## Tests
+
+Run the test suite with:
 
 ```bash
 python -m pytest -q
 ```
 
-The current test suite contains 10 tests covering important parts of the workflow such as filename parsing, word normalization, sequence matching, boundary-error calculation, configuration handling, and recording-level aggregation.
+The current suite contains 10 focused tests covering filename parsing, word normalization, sequence matching, boundary-error calculation, configuration handling, and recording-level aggregation.
 
 ## Outputs
 
-The canonical word-level dataset is saved as:
+The canonical word-level dataset is written to:
 
 ```text
 data/derived/word_alignment_evaluation.csv
 ```
 
-Result tables are written to:
+Summary tables are written to:
 
 ```text
 results/tables/
 ```
 
-and figures to:
+Figures are written to:
 
 ```text
 results/figures/
 ```
 
-The main descriptive results are:
+The generated result files include recording-level summaries, tolerance summaries, large-error diagnostics, the paired statistical test, and evaluation figures.
 
-| Aligner | Mean absolute word-boundary error |
-| --- | ---: |
-| MFA | 53.82 ms |
-| WebMAUS | 96.78 ms |
+## Main evaluation results
 
-MFA had the lower recording-level mean error in 13 of the 16 recordings. With recordings weighted equally, the mean errors were approximately 53.30 ms for MFA and 94.29 ms for WebMAUS. The paired two-sided Wilcoxon comparison gave `W = 8, p < .001`.
+Across 3,676 matched words:
+
+| Aligner | Mean absolute word-boundary error | Median absolute error | Boundaries within 50 ms |
+| --- | ---: | ---: | ---: |
+| MFA | 53.82 ms | 22.81 ms | 70.96% |
+| WebMAUS | 96.78 ms | 43.26 ms | 55.52% |
+
+At the recording level:
+
+- MFA had the lower mean error in 13 of 16 recordings.
+- Mean recording-level MAE was 53.30 ms for MFA and 94.29 ms for WebMAUS.
+- The mean paired difference (WebMAUS − MFA) was 40.99 ms.
+- The paired two-sided Wilcoxon signed-rank test gave `W = 8, p < .001`.
+
+These results compare the complete alignment configurations used in this evaluation.
 
 ## Scope and limitations
 
-This is an **in-domain evaluation**. The 16 evaluation recordings were part of the target corpus used during MFA adaptation, so the results should not be interpreted as performance on completely unseen Kinyarwanda speech.
+This evaluation is limited to **word boundaries**. Phone tiers may be present in the alignment output, but they are not formally evaluated here.
+
+The evaluation is also **in-domain**: the 16 recordings were part of the corpus used during MFA adaptation. The results therefore should not be interpreted as performance on completely unseen Kinyarwanda speech.
 
 The four manual annotators worked on different recordings, so inter-annotator agreement cannot be estimated from this evaluation.
 
-Phone tiers are generated by the alignment workflow, but the formal evaluation in this AP project is limited to word boundaries.
+Large alignment errors are retained in the analysis and reported for inspection rather than being automatically removed.
 
-Large alignment errors are retained and reported for inspection rather than being automatically removed.
+## Reproducibility
 
-## Project context
+The repository is organized so that the analysis can be rerun from the TextGrid inputs using project-relative paths, a YAML configuration file, a pinned `requirements.txt`, a single command-line entry point, explicit validation checks, automated tests, and deterministic output locations.
 
-This repository was implemented by **Moloud Asakereh** as an AP project for **Advanced Python for NLP at HHU Düsseldorf**.
+This makes the repository an executable record of the evaluation analysis used in the study.
 
-The broader forced-alignment study is collaborative, while the AP focuses on the Python implementation and reproducible organization of the evaluation workflow.
+## Paper
 
-The manual annotators are anonymized in the repository.
+This repository is intended to accompany the conference paper describing the Kinyarwanda forced-alignment resource and its validation.
 
-Research data should only be shared or redistributed according to the permissions of the underlying project.
+A paper link and formal citation can be added here after the review process permits de-anonymization.
