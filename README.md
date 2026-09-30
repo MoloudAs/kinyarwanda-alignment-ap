@@ -200,8 +200,3 @@ The repository is organized so that the analysis can be rerun from the TextGrid 
 
 This makes the repository an executable record of the evaluation analysis used in the study.
 
-## Paper
-
-This repository is intended to accompany the conference paper describing the Kinyarwanda forced-alignment resource and its validation.
-
-A paper link and formal citation can be added here after the review process permits de-anonymization.
