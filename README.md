@@ -43,7 +43,7 @@ The main inferential comparison is performed at the **recording level**, using 1
 ## Repository structure
 
 ```text
-kinyarwanda-alignment/
+kinyarwanda-alignment-evaluation/
 ├── config/
 │   └── config.yaml
 ├── data/
